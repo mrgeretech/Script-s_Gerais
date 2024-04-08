@@ -1,0 +1,58 @@
+ANTES!!!
+BACKUP DA BASE 9.2
+
+then
+
+
+select versao, releases from conf.parametros_conf;
+
+mais de um usuario moelo no grupo
+select usuario_modelo, cod_grupo, username from conf.usuarios where usuario_modelo = 't' order by cod_grupo
+
+
+1º retirar os OIDs (ela tem que estar no minmo na versão 5.79.62.3)
+Cliente estava na versão 79.67(teste) 79.66
+Tempo para concluir: 01:45				1:05
+
+DO
+$$
+DECLARE
+tname record;
+BEGIN
+FOR tname IN select t.table_schema, t.table_name
+from information_schema.tables t
+where table_schema in (select distinct(table_schema) from information_schema.tables where
+table_schema <> 'pg_catalog' and
+table_schema <> 'information_schema')
+and
+t.table_type = 'BASE TABLE' and
+t.table_name <> 'agendamentos_desistencias' and
+t.table_name <> 'itens_requisicoes_entrada_estoque_entradas_lotes' and
+t.table_name <> 'itens_notas_fiscais_entradas_lotes'
+LOOP
+execute format('ALTER TABLE %I.%I SET WITHOUT OIDS', tname.table_schema, tname.table_name);
+END LOOP;
+ALTER TABLE sigh.agendamentos_desistencias SET WITHOUT OIDS;
+ALTER TABLE sigh.itens_requisicoes_entrada_estoque_entradas_lotes SET WITHOUT OIDS;
+END;
+$$
+
+
+2º delete (DROP CAST (aclitem[] AS text);)
+Tempo para concluir: 45 msec			35msec
+
+DROP CAST (aclitem[] AS text);
+
+
+3º backup desta base do 9.2
+Tempo para concluir: 13:24 - 13:53		1-23:55err		2-01:10~6		3-22:22~22:50		
+
+4º restaurar no postgres 13.5
+Tempo para concluir: 14:02 - 17:00		06:03~~erro		00:20~2:15							
+
+5º atualizar para a ultima da 80
+Tempo para concluir: 11:32 - 11:42						02:25~2:35
+
+6° VACUUM!!!!
+
+psql.exe -h 192.168.8.3 -p 5432 -U postgres -d bd0132 -c "VACUUM FULL VERBOSE;"
